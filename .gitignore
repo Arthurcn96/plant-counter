@@ -9,6 +9,9 @@ wheels/
 *.tiff
 output/
 .DS_Store
+*.tif
+output/
+*.pdf
 
 # Virtual environments
 .venv
