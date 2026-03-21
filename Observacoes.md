@@ -33,7 +33,7 @@ $$BI_{Aimonino} = kR - G - B \quad \text{com } k \in [0, 4]$$
 
 Adaptei a fórmula para evidenciar o canal verde ao invés do vermelho, chegando ao índice:
 
-$$EG_{Arthur} = kG - R - B \quad \text{com } k \in [0, 4]$$
+$$ExG_{Arthur} = kG - R - B \quad \text{com } k \in [0, 4]$$
 
 Como a fórmula pode gerar valores negativos dependendo dos valores de R, G e B do pixel, é necessário normalizar o resultado para o intervalo [0, 255] antes de qualquer visualização ou binarização.
 
