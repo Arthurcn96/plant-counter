@@ -7,11 +7,12 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-def detect_plants(masks: dict, min_area: int = 60, max_area: int = 3000):
+
+def detect_plants(masks: dict, min_area: int = 60, max_area: int = 3000) -> dict:
     """
     Detecta centroides de plantas a partir de um dicionário de máscaras binárias.
     """
-    logger.info(f"Detecting plants from {len(masks)} masks...")
+    logger.info(f"Iniciando detecção de plantas | {len(masks)} máscara(s), área válida: [{min_area}, {max_area}] px²")
 
     detected_points = {}
 
@@ -21,34 +22,41 @@ def detect_plants(masks: dict, min_area: int = 60, max_area: int = 3000):
             inverted, connectivity=8
         )
 
-        points = []
+        total_components = num_labels - 1  # exclui o background
+        points    = []
+        rejected  = 0
+
         for j in range(1, num_labels):
             area = stats[j, cv2.CC_STAT_AREA]
             if min_area <= area <= max_area:
                 cx, cy = int(centroids[j][0]), int(centroids[j][1])
                 points.append((cx, cy))
+            else:
+                rejected += 1
 
         detected_points[name] = points
-        logger.info(f"  {name}: {len(points)} plantas detectadas")
+        logger.debug(f"  {name}: {total_components} componentes | {len(points)} aceitos | {rejected} rejeitados por área")
 
     total = sum(len(v) for v in detected_points.values())
-    logger.info(f"Total de pontos detectados: {total}")
-
+    logger.info(f"Detecção concluída: {total} ponto(s) detectado(s) no total.")
     return detected_points
+
 
 def vote_points(detected_points: dict, eps: int = 15, min_votes: int = 2) -> tuple[list, list]:
     """
-    Compara pontos detectados em múltiplas máscaras e retorna apenas os que aparecem em pelo menos min_votes fontes diferentes.
+    Compara pontos detectados em múltiplas máscaras e retorna apenas os
+    que aparecem em pelo menos min_votes fontes diferentes.
     """
-    logger.info(f"Voting consensus points (eps={eps}, min_votes={min_votes})...")
+    logger.info(f"Iniciando votação | eps={eps}px, min_votes={min_votes}")
 
     all_points  = []
     all_sources = []
 
     for name, points in detected_points.items():
-        for p in points:
-            all_points.append(p)
-            all_sources.append(name)
+        all_points.extend(points)
+        all_sources.extend([name] * len(points))
+
+    logger.debug(f"  Total de pontos para votação: {len(all_points)} em {len(detected_points)} fonte(s)")
 
     confirmed = []
     rejected  = []
@@ -58,7 +66,7 @@ def vote_points(detected_points: dict, eps: int = 15, min_votes: int = 2) -> tup
         if i in used:
             continue
 
-        neighbors      = []
+        neighbors        = []
         neighbor_sources = {si}
 
         for j, (pj, sj) in enumerate(zip(all_points, all_sources)):
@@ -80,28 +88,27 @@ def vote_points(detected_points: dict, eps: int = 15, min_votes: int = 2) -> tup
             rejected.append(pi)
             used.add(i)
 
-    logger.info(f"  Confirmed: {len(confirmed)}")
-    logger.info(f"  Rejected:  {len(rejected)}")
-
+    taxa = len(confirmed) / (len(confirmed) + len(rejected)) * 100 if all_points else 0
+    logger.info(f"Votação concluída | confirmados: {len(confirmed)} | rejeitados: {len(rejected)} | taxa de aprovação: {taxa:.1f}%")
     return confirmed, rejected
 
-def contours_from_masks( masks: dict, min_area: int = 60, max_area: int = 3000) -> list:
+
+def contours_from_masks(masks: dict, min_area: int = 60, max_area: int = 3000) -> list:
     """
     Extrai contornos de plantas a partir de um dicionário de máscaras binárias.
     """
-    logger.info(f"Extracting contours from {len(masks)} masks...")
+    logger.info(f"Extraindo contornos | {len(masks)} máscara(s), área válida: [{min_area}, {max_area}] px²")
 
     contours_list = []
 
     for name, mask in masks.items():
-        # Inverte — plantas são pretas (0), findContours precisa de branco (255)
         inverted = cv2.bitwise_not(mask)
-
         contours, _ = cv2.findContours(
             inverted, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
 
-        count = 0
+        count    = 0
+        rejected = 0
         for contour in contours:
             area = cv2.contourArea(contour)
             if min_area <= area <= max_area:
@@ -111,8 +118,10 @@ def contours_from_masks( masks: dict, min_area: int = 60, max_area: int = 3000) 
                     'source':  name,
                 })
                 count += 1
+            else:
+                rejected += 1
 
-        logger.info(f"  {name}: {count} contornos extraídos")
+        logger.debug(f"  {name}: {count} contorno(s) aceito(s) | {rejected} rejeitado(s) por área")
 
-    logger.info(f"Total de contornos: {len(contours_list)}")
+    logger.info(f"Extração concluída: {len(contours_list)} contorno(s) no total.")
     return contours_list
