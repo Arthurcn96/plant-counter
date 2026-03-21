@@ -3,6 +3,9 @@ _DISCLAIMER: O Readme.md foi gerado por IA_
 
 O **Plant Counter** não é apenas um simples contador de pixels; ele funciona como um "comitê de especialistas" digital para o inventário florestal. Desenvolvido em Python, o sistema foi projetado para detectar e analisar mudas (como eucalipto) em imagens de alta resolução (TIFF) capturadas por drones.
 
+### Observações
+Para questão de melhor organização separei [este arquivo Markdown](Observacoes.md) pra apresentar a minha abordagem estratégica, nela eu exploro um pouco mais afundo as escolhas, limitações e melhorias da minha
+
 ### 🗳️ O Diferencial: O Sistema de Votação
 Diferente de métodos tradicionais que confiam em apenas uma técnica, o Plant Counter utiliza um **Mecanismo de Consenso (Votação Espacial)**:
 1.  **Múltiplos Olhares:** O programa analisa a imagem através de várias "lentes" diferentes (bandas RGB individuais e índices de vegetação como ExG e Smolka).
