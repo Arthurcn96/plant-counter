@@ -1,0 +1,32 @@
+# Configurações de Caminhos e Estrutura de Pastas
+paths:
+  input_tif: "data/sample1.tif"  # Caminho da imagem georreferenciada de entrada
+  output_base: "output"          # Pasta raiz para os resultados
+  output_prefix: "exp"           # Prefixo para as pastas incrementais (exp1, exp2...)
+
+# Parâmetros de Pré-processamento
+preprocessing:
+  normalization:
+    p_lower: 2                   # Percentil inferior para normalização
+    p_upper: 98                  # Percentil superior para normalização
+
+  clahe:
+    clip_limit: 2.0              # Limite para o contraste adaptativo
+    tile_grid_size: [8, 8]       # Tamanho da grade local (OpenCV converte para tuple)
+
+# Parâmetros de Segmentação
+segmentation:
+  bands:
+    threshold: 80
+    kernel_size: 10
+  green_index:
+    threshold_manual: 200
+    kernel_size: 12
+
+# Parâmetros de Detecção
+detection:
+  show_rejected: true
+  min_area: 50
+  max_area: 3000
+  eps: 15
+  min_votos: 2
