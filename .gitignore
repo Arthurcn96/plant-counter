@@ -10,7 +10,7 @@ wheels/
 output/
 .DS_Store
 *.tif
-output/
+output/exp*
 *.pdf
 
 # Virtual environments
